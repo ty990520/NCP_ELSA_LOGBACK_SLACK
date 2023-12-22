@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.14'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '11'
+}
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs' // 여기에 SDK JAR 파일이 위치하는 디렉토리를 지정합니다.
+    }
+}
+
+dependencies {
+    // Spring Boot Starter Web (Logback 포함)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    //json 로깅 포맷 변환
+//    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // https://mvnrepository.com/artifact/net.logstash.logback/logstash-logback-encoder
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.2'
+
+
+    // ELSA SDK 로컬 JAR 파일 설정
+    implementation files('libs/nelo2-java-sdk-core-1.6.6.jar')
+    implementation files('libs/nelo2-java-sdk-logback-1.6.6.jar')
+
+    // Logback Classic
+    implementation 'ch.qos.logback:logback-classic:1.2.12'
+
+
+    // Apache Thrift
+    implementation 'org.apache.thrift:libthrift:0.9.3'
+    s:httpclient:4.2.6'
+
+    // Apache HttpClient
+    implementation 'org.apache.httpcomponent
+
+    //logback-slack
+    implementation "com.github.maricn:logback-slack-appender:1.4.0"
+
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+

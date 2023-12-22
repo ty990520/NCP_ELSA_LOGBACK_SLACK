@@ -1,0 +1,68 @@
+<configuration>
+    <!--     Console Appender : 로그 메시지를 콘솔(즉, 표준 출력)에 출력-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%-5level]\(%file:%line\) %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--json형식 출력--><!-- Cloud Log Analytics 설정 -->
+    <appender name="json" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>
+                {"message": "Logger: %logger, Level: %level, Message: %msg, StackTrace: %ex{full}"}
+            </customFields>
+        </encoder>
+    </appender>
+
+    <!-- NELO2 Appender 설정 -->
+    <!--ThriftAppender : 로그 메시지를 외부 시스템(여기서는 ELSA)으로 전송-->
+    <appender name="nelo" class="com.naver.nelo2.logback.ThriftAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level><!--기본값 : TRACE-->
+        </filter>
+        <param name="projectName" value="Pcbe5e4_devops-logging"></param> <!-- 이해를 위해 프로젝트키 그대로 둠 (현재는 삭제된 프로젝트)-->
+        <param name="collectorUrl" value="elsa-col.ncloud.com"></param>
+        <param name="encoding" value="utf-8"></param>
+        <param name="timeout" value="1200"></param>
+        <param name="enable" value="true"></param>
+        <param name="debug" value="false"></param>
+        <param name="version" value="1.0.0"></param>
+        <param name="errorCodeType" value="default"></param>
+        <param name="port" value="10006"></param>
+        <param name="isBulkEnabled" value="true"></param>
+    </appender>
+
+    <!-- slack 알림 전송 -->
+    <springProperty name="SLACK_WEBHOOK_URI" source="logging.slack.webhook-url"/>
+    <appender name="SLACK" class="com.github.maricn.logback.SlackAppender">
+        <webhookUri><!--slack webhook url--></webhookUri>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %msg %n</pattern>
+        </layout>
+        <username>web-error-log</username>
+        <iconEmoji>:slack:</iconEmoji>
+        <colorCoding>true</colorCoding>
+    </appender>
+    <appender name="ASYNC_SLACK" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="SLACK"/>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+    </appender>
+
+    <!-- Logger : 특정 패키지 또는 클래스로부터 발생하는 로그를 처리-->
+    <logger name="com" additivity="false"><!-- com 패키지의 로그를 처리-->
+        <level value="debug"/>
+        <appender-ref ref="json"/>
+        <appender-ref ref="ASYNC_SLACK"/>
+        <appender-ref ref="nelo"/>
+    </logger>
+    <!-- Root Logger -->
+    <root level="warn">
+        <appender-ref ref="json"/>
+        <appender-ref ref="ASYNC_SLACK"/>
+        <appender-ref ref="nelo"/>
+    </root>
+</configuration>
+
